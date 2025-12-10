@@ -48,3 +48,50 @@ resource "azurerm_storage_container" "newcontainer2" {
  container_access_type =  "blob" 
 } 
 
+# Create MySQL Server 
+resource "azurerm_mysql_flexible_server" "serverformation1" { 
+name    =  "serveriacteam15" #add your team name to make it unique. Can only consist of lowercase letters and numbers, and must be between 3 and 24 characters long.
+
+
+location    =  var.location 
+resource_group_name  =  var.rg_name  
+administrator_login   =  "adminformation" 
+administrator_password =  "formationCodingGame0!" 
+ sku_name =  "B_Standard_B1ms" 
+ version =  "8.0.21" 
+ geo_redundant_backup_enabled = false 
+ storage { 
+  auto_grow_enabled = false 
+  size_gb = 20 
+  io_scaling_enabled = false 
+  iops = 360 
+ } 
+} 
+resource "azurerm_mysql_flexible_server_configuration" "ssl_config" {
+  name                = "require_secure_transport"
+  resource_group_name = var.rg_name
+  server_name         = azurerm_mysql_flexible_server.serverformation1.name
+  value               = "OFF"
+}
+
+# Create MySQL database 
+resource "azurerm_mysql_flexible_database" "mysqldb1" { 
+ name    =  "mysqldb1-iac" 
+ resource_group_name =  var.rg_name
+ server_name   =  azurerm_mysql_flexible_server.serverformation1.name
+ charset    =  "utf8" 
+ collation    =  "utf8_unicode_ci" 
+  depends_on = [ azurerm_mysql_flexible_server.serverformation1 ] 
+} 
+# Configure firewall to open access 
+resource "azurerm_mysql_flexible_server_firewall_rule" "mysqlfwrule1" { 
+ name        =  "mysqlfwrule1-iac" 
+ resource_group_name =  var.rg_name
+ server_name     =  azurerm_mysql_flexible_server.serverformation1.name 
+  start_ip_address  =  "0.0.0.0"
+ end_ip_address   =  "255.255.255.255" 
+ depends_on = [ azurerm_mysql_flexible_server.serverformation1, 
+ azurerm_mysql_flexible_database.mysqldb1 ] 
+}
+
+
