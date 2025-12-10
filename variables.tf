@@ -22,6 +22,6 @@ default = "Teletubbies"
 
 # Define a variable for the Azure region (location) where resources will be deployed.
 variable "location" { 
-type  = string 
+type = string 
 default = "France Central"
 } 
